@@ -14,16 +14,27 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-family); }
 
+/* [중요] dvh 단위 적용: 태블릿 주소창 문제 해결 */
 body { 
-    height: 100vh; 
+    height: 100dvh; 
     display: flex; 
     flex-direction: column; 
     background: var(--bg-color); 
-    overflow: hidden; 
+    overflow: hidden; /* 전체 스크롤 방지 */
 }
 
 /* 헤더 */
-header { background: #000; color: #fff; height: 60px; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; z-index: 100; }
+header { 
+    background: #000; 
+    color: #fff; 
+    height: 60px; 
+    padding: 0 2rem; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    flex-shrink: 0; 
+    z-index: 100; 
+}
 .title { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
 .title img { height: 24px; }
 .white-badge { background: #333; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; color: #00E676; }
@@ -34,7 +45,7 @@ header { background: #000; color: #fff; height: 60px; padding: 0 2rem; display: 
 .app-container { 
     display: flex; 
     flex: 1; 
-    height: calc(100vh - 60px); 
+    height: calc(100dvh - 60px); /* dvh 적용 */
 }
 
 /* [좌측] 사이드바 */
@@ -43,6 +54,8 @@ header { background: #000; color: #fff; height: 60px; padding: 0 2rem; display: 
     background: #fff; 
     border-right: 1px solid #ddd; 
     padding: 1.5rem; 
+    /* [수정] 하단 패딩을 넉넉하게 줘서 패킷 로그가 잘리지 않게 함 */
+    padding-bottom: 4rem; 
     display: flex; 
     flex-direction: column; 
     gap: 1.5rem; 
@@ -89,7 +102,7 @@ video { position: absolute; visibility: hidden; }
 canvas { 
     position: absolute; left: 0; top: 0;
     width: 100%; height: 100%; object-fit: contain; 
-    z-index: 1; 
+    z-index: 1; /* 가이드보다 뒤에 배치 */
 }
 
 /* 영역 가이드 (Overlay) */
@@ -98,8 +111,8 @@ canvas {
     top: 0; left: 0; width: 100%; height: 100%;
     display: flex;
     flex-direction: column;
-    z-index: 10; 
-    pointer-events: none; 
+    z-index: 10; /* 캔버스보다 앞에 배치 (텍스트 보임) */
+    pointer-events: none; /* 클릭 통과 */
 }
 
 .zone {
@@ -125,7 +138,8 @@ canvas {
 .forward-zone { 
     height: var(--h-forward); 
     background: linear-gradient(to bottom, rgba(0, 230, 118, 0.15), rgba(0, 230, 118, 0)); 
-    align-items: flex-start; padding-top: 30px;
+    align-items: flex-start; 
+    padding-top: 30px;
 }
 .stop-zone { 
     height: var(--h-stop); 
@@ -136,7 +150,9 @@ canvas {
 .backward-zone { 
     height: var(--h-backward); 
     background: linear-gradient(to top, rgba(234, 67, 53, 0.15), rgba(234, 67, 53, 0)); 
-    align-items: flex-end; padding-bottom: 30px;
+    align-items: flex-end; 
+    /* [수정] 하단 패딩을 대폭 늘려 태블릿 주소창에 가려지지 않게 함 */
+    padding-bottom: 80px; 
 }
 
 .center-line {
@@ -146,9 +162,9 @@ canvas {
     border-left: 1px dashed rgba(255,255,255,0.5);
 }
 
-/* 태블릿/모바일 반응형 */
+/* 태블릿/모바일 세로 모드 대응 */
 @media (max-width: 900px) {
   .app-container { flex-direction: column; height: auto; overflow: visible; }
-  .sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid #ddd; }
-  .stage { height: 60vh; min-height: 400px; }
+  .sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid #ddd; padding-bottom: 2rem; }
+  .stage { height: 60dvh; min-height: 400px; }
 }
