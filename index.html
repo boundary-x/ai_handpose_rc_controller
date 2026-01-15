@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>바운더리엑스 AI 핸드포즈 RC 컨트롤러</title>
+  <title>바운더리엑스 AI RC 컨트롤러</title>
   
   <link rel="icon" href="https://raw.githubusercontent.com/boundary-x/ai_teachable_machine/refs/heads/main/Favicon.png"/> 
+  <link rel="X-icon" href="https://raw.githubusercontent.com/boundary-x/ai_teachable_machine/refs/heads/main/Favicon.png"/> 
   
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
   <link rel="stylesheet" type="text/css" href="style.css">
@@ -17,7 +18,7 @@
   <header>
     <div class="title">
       <img src="https://raw.githubusercontent.com/boundary-x/ai_voice_recognition/refs/heads/main/boundaryx_logo.png" alt="Logo">
-      AI 핸드포즈 <span class="white-badge">RC 컨트롤러</span>
+      AI RC 컨트롤러 <span class="white-badge">Pro</span>
     </div>
     <div class="header-right">
         <span id="model-status" class="status-indicator loading">모델 로딩 중...</span>
@@ -73,3 +74,17 @@
             <div class="zone stop-zone">
                 <span>🛑 정지 (Deadzone)</span>
             </div>
+            <div class="zone backward-zone">
+                <span>🔙 후진 (가속)</span>
+            </div>
+            
+            <div class="center-line"></div>
+        </div>
+
+        <canvas id="output_canvas"></canvas>
+      </div>
+    </main>
+  </div>
+  
+  </body>
+</html>
