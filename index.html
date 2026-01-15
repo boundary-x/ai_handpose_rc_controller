@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>바운더리엑스 AI RC 컨트롤러</title>
+  
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+  <link rel="stylesheet" type="text/css" href="style.css">
+
+  <script type="module" src="script.js"></script>
+</head>
+
+<body>
+  <header>
+    <div class="title">
+      <img src="https://raw.githubusercontent.com/boundary-x/ai_voice_recognition/refs/heads/main/boundaryx_logo.png" alt="Logo">
+      AI RC 컨트롤러 <span class="white-badge">Pro</span>
+    </div>
+    <div class="header-right">
+        <span id="model-status" class="status-indicator loading">모델 로딩 중...</span>
+    </div>
+  </header>
+
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="panel">
+        <h3>📡 연결 설정</h3>
+        <p class="desc">마이크로비트와 블루투스로 연결합니다.</p>
+        <div id="bt-status" class="status-box">연결 대기 중</div>
+        <button id="connect-btn" class="btn-primary">기기 찾기</button>
+        <button id="disconnect-btn" class="btn-secondary hidden">연결 해제</button>
+      </div>
+
+      <div class="panel">
+        <h3>🎮 제어 상태</h3>
+        <div class="monitor-row">
+            <span class="motor-label">LEFT</span>
+            <span id="log-left" class="motor-value">Stop</span>
+        </div>
+        <div class="monitor-row">
+            <span class="motor-label">RIGHT</span>
+            <span id="log-right" class="motor-value">Stop</span>
+        </div>
+        <div class="desc-box">
+            <ul>
+                <li>✋ <strong>상단:</strong> 전진 (최대 255)</li>
+                <li>✊ <strong>하단:</strong> 후진 (최대 255)</li>
+                <li>🎯 <strong>중앙:</strong> 정지 (Deadzone)</li>
+            </ul>
+        </div>
+      </div>
+      
+      <div class="debug-panel">
+        <p>전송 데이터:</p>
+        <code id="packet-log">LF000RF000</code>
+      </div>
+    </aside>
+
+    <main class="stage">
+      <div class="canvas-wrapper">
+        <video id="webcam" autoplay playsinline></video>
+        <canvas id="output_canvas"></canvas>
+        
+        <div class="overlay-guide">
+            <div class="zone-label left">L-Motor Zone</div>
+            <div class="zone-label right">R-Motor Zone</div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
