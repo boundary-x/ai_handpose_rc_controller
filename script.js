@@ -264,7 +264,7 @@ async function sendBluetoothData(str) {
 
   try {
     const encoder = new TextEncoder();
-    await rxCharacteristic.writeValue(encoder.encode(str + "\n"));
+    await rxCharacteristic.writeValue(encoder.encode(str + "\r\n"));
   } catch (e) {
     console.error("TX Error", e);
   }
@@ -272,3 +272,4 @@ async function sendBluetoothData(str) {
 
 // 앱 시작
 createHandLandmarker();
+
