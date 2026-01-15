@@ -3,10 +3,10 @@
   --accent: #00E676; 
   --danger: #EA4335;
   --bg-color: #F0F2F5;
-  --sidebar-width: 340px; /* 사이드바 너비 살짝 조정 */
+  --sidebar-width: 340px;
   --font-family: 'Pretendard', sans-serif;
   
-  /* 영역 비율 변수 (JS 로직과 동일하게 맞춤) */
+  /* 영역 비율 (JS 로직과 일치) */
   --h-forward: 40%;
   --h-stop: 20%;
   --h-backward: 40%;
@@ -14,12 +14,12 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-family); }
 
-/* 전체 레이아웃: 화면이 꽉 차되 스크롤 가능하게 설정 */
 body { 
-    min-height: 100vh; 
+    height: 100vh; /* 화면 전체 높이 고정 */
     display: flex; 
     flex-direction: column; 
     background: var(--bg-color); 
+    overflow: hidden; /* 스크롤 방지 */
 }
 
 /* 헤더 */
@@ -30,12 +30,11 @@ header { background: #000; color: #fff; height: 60px; padding: 0 2rem; display: 
 .status-indicator { font-size: 0.85rem; padding: 4px 12px; border-radius: 20px; background: #333; color: #ccc; }
 .status-indicator.ready { background: var(--accent); color: #000; font-weight: 700; }
 
-/* 메인 컨테이너 (사이드바 + 스테이지) */
+/* 메인 컨테이너 */
 .app-container { 
     display: flex; 
-    flex: 1; /* 남은 높이 모두 차지 */
-    height: calc(100vh - 60px); /* 헤더 제외 높이 고정 (푸터는 스크롤로) */
-    overflow: hidden; /* 내부 스크롤 사용 */
+    flex: 1; 
+    height: calc(100vh - 60px); 
 }
 
 /* [좌측] 사이드바 */
@@ -49,6 +48,8 @@ header { background: #000; color: #fff; height: 60px; padding: 0 2rem; display: 
     gap: 1.5rem; 
     overflow-y: auto; 
     flex-shrink: 0;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    z-index: 20;
 }
 
 .panel h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.8rem; color: #111; }
@@ -88,7 +89,7 @@ video { position: absolute; visibility: hidden; }
 canvas { 
     position: absolute; left: 0; top: 0;
     width: 100%; height: 100%; object-fit: contain; 
-    z-index: 2; /* 가이드보다 위에 위치 */
+    z-index: 1; /* 가이드 뒤로 보냄 (수정됨) */
 }
 
 /* 영역 가이드 (Overlay) */
@@ -97,7 +98,7 @@ canvas {
     top: 0; left: 0; width: 100%; height: 100%;
     display: flex;
     flex-direction: column;
-    z-index: 1; /* 캔버스 뒤, 비디오 앞 */
+    z-index: 10; /* 캔버스 위로 올림 (수정됨) */
     pointer-events: none; /* 클릭 통과 */
 }
 
@@ -108,61 +109,46 @@ canvas {
     justify-content: center;
     font-weight: 800;
     font-size: 1.5rem;
-    color: rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.4); /* 텍스트 더 잘 보이게 밝기 조절 */
     text-transform: uppercase;
     border-bottom: 1px dashed rgba(255,255,255,0.1);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8); /* 텍스트 그림자 강화 */
 }
 
 .zone span {
-    background: rgba(0,0,0,0.3);
-    padding: 5px 15px;
-    border-radius: 20px;
+    background: rgba(0,0,0,0.5);
+    padding: 8px 20px;
+    border-radius: 30px;
 }
 
-/* JS 로직 비율과 일치시킴 */
+/* 영역별 스타일 */
 .forward-zone { 
     height: var(--h-forward); 
-    background: linear-gradient(to bottom, rgba(0, 230, 118, 0.1), rgba(0, 230, 118, 0)); 
-    align-items: flex-start; padding-top: 20px;
+    background: linear-gradient(to bottom, rgba(0, 230, 118, 0.15), rgba(0, 230, 118, 0)); 
+    align-items: flex-start; padding-top: 30px;
 }
 .stop-zone { 
     height: var(--h-stop); 
-    background: rgba(255, 255, 255, 0.02); 
-    color: rgba(255,255,255,0.5);
+    background: rgba(255, 255, 255, 0.05); 
+    color: rgba(255,255,255,0.7);
     font-size: 1.2rem;
 }
 .backward-zone { 
     height: var(--h-backward); 
-    background: linear-gradient(to top, rgba(234, 67, 53, 0.1), rgba(234, 67, 53, 0)); 
-    align-items: flex-end; padding-bottom: 20px;
+    background: linear-gradient(to top, rgba(234, 67, 53, 0.15), rgba(234, 67, 53, 0)); 
+    align-items: flex-end; padding-bottom: 30px;
 }
 
 .center-line {
     position: absolute; left: 50%; top: 0; bottom: 0;
     width: 2px; background: rgba(255,255,255,0.3);
     transform: translateX(-50%);
+    border-left: 1px dashed rgba(255,255,255,0.5);
 }
 
-/* 푸터 스타일 */
-footer { background: #000; color: #FFF; padding: 3rem 2rem; border-top: 1px solid #222; }
-.footer-container { max-width: 1200px; margin: 0 auto; }
-.footer-top { display: flex; gap: 4rem; flex-wrap: wrap; }
-.footer-info { flex: 1; min-width: 280px; }
-.footer-logo { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; color: #FFF; }
-.slogan { color: #CCC; font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.5; }
-address { color: #888; font-style: normal; line-height: 1.6; font-size: 0.85rem; }
-.copyright { margin-top: 0.8rem; font-size: 0.8rem; color: #666; }
-.footer-links { display: flex; gap: 4rem; flex-wrap: wrap; }
-.link-column h4 { margin-bottom: 1.2rem; font-weight: 700; color: #FFF; font-size: 0.95rem; }
-.link-column ul { list-style: none; }
-.link-column li { margin-bottom: 0.8rem; }
-.link-column a { text-decoration: none; color: #CCC; transition: 0.2s; font-size: 0.9rem; }
-.link-column a:hover { color: #FFF; text-decoration: underline; }
-
-/* 태블릿/모바일 반응형 처리 */
+/* 태블릿/모바일 반응형 */
 @media (max-width: 900px) {
   .app-container { flex-direction: column; height: auto; overflow: visible; }
   .sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid #ddd; }
   .stage { height: 60vh; min-height: 400px; }
-  .footer-top { flex-direction: column; gap: 2rem; }
 }
