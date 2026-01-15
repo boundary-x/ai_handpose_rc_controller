@@ -4,10 +4,10 @@ import {
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 
 /** * 설정 변수 */
-const DEADZONE_MIN = 0.40;
-const DEADZONE_MAX = 0.60;
+const DEADZONE_MIN = 0.40; // 0~40% 전진
+const DEADZONE_MAX = 0.60; // 60~100% 후진
 const BLUETOOTH_UUID_SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-// ★ 수정됨: 끝자리가 3이어야 데이터 전송(Write)이 가능합니다.
+// ★ RX UUID (Write): 끝자리 3
 const BLUETOOTH_UUID_RX = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; 
 
 let handLandmarker = undefined;
@@ -19,7 +19,7 @@ let results = undefined;
 // 블루투스 변수
 let bluetoothDevice, rxCharacteristic;
 let isConnected = false;
-let isSendingData = false; // ★ 추가: 전송 중 중복 방지 플래그
+let isSendingData = false; // 전송 락
 
 // DOM 요소
 const btnConnect = document.getElementById("connect-btn");
@@ -56,6 +56,7 @@ function startWebcam() {
   canvas = document.getElementById("output_canvas");
   ctx = canvas.getContext("2d");
 
+  // 가로 모드 최적화 해상도
   const constraints = { video: { width: 1280, height: 720 } };
 
   navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
@@ -77,6 +78,7 @@ async function predictWebcam() {
     results = handLandmarker.detectForVideo(webcam, startTimeMs);
   }
 
+  // 화면 그리기 (거울 모드)
   ctx.save();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.translate(canvas.width, 0);
@@ -84,19 +86,19 @@ async function predictWebcam() {
   ctx.drawImage(webcam, 0, 0, canvas.width, canvas.height);
   ctx.restore();
 
-  drawGuides();
-
+  // 손 인식 및 모터 값 계산
   let leftMotor = { dir: 'F', speed: 0 };
   let rightMotor = { dir: 'F', speed: 0 };
 
   if (results.landmarks) {
     for (const landmarks of results.landmarks) {
       const wrist = landmarks[0]; 
-      const visualX = 1 - wrist.x; // 거울모드 좌표 변환
+      const visualX = 1 - wrist.x; // 좌우 반전 좌표
       const visualY = wrist.y;
 
       const motorData = calculateMotorValue(visualY);
 
+      // 화면 왼쪽(0~0.5)은 Left Motor
       if (visualX < 0.5) {
         leftMotor = motorData;
         drawHandIndicator(visualX, visualY, motorData, "L");
@@ -109,7 +111,7 @@ async function predictWebcam() {
 
   updateUI(leftMotor, rightMotor);
   
-  // 패킷 생성 (예: LF255RF255)
+  // 패킷 생성 (LFxxxRFxxx)
   const lSpeedStr = String(leftMotor.speed).padStart(3, '0');
   const rSpeedStr = String(rightMotor.speed).padStart(3, '0');
   const packet = `L${leftMotor.dir}${lSpeedStr}R${rightMotor.dir}${rSpeedStr}`;
@@ -119,57 +121,54 @@ async function predictWebcam() {
   window.requestAnimationFrame(predictWebcam);
 }
 
+// 모터 값 계산 (Deadzone 적용)
 function calculateMotorValue(y) {
   let speed = 0;
   let dir = 'F';
 
   if (y < DEADZONE_MIN) {
+    // 전진 (0 ~ 0.4)
     let ratio = (DEADZONE_MIN - y) / DEADZONE_MIN;
     speed = Math.min(255, Math.floor(ratio * 255));
     dir = 'F';
   } else if (y > DEADZONE_MAX) {
+    // 후진 (0.6 ~ 1.0)
     let ratio = (y - DEADZONE_MAX) / (1.0 - DEADZONE_MAX);
     speed = Math.min(255, Math.floor(ratio * 255));
     dir = 'B';
   } else {
+    // 정지
     speed = 0;
   }
   return { dir, speed };
 }
 
-function drawGuides() {
-  const w = canvas.width;
-  const h = canvas.height;
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([10, 10]);
-  ctx.beginPath();
-  ctx.moveTo(w / 2, 0);
-  ctx.lineTo(w / 2, h);
-  ctx.stroke();
-  ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
-  ctx.fillRect(0, h * DEADZONE_MIN, w, h * (DEADZONE_MAX - DEADZONE_MIN));
-  ctx.setLineDash([]);
-}
-
+// 손 위치 시각화 (동그라미)
 function drawHandIndicator(x, y, data, side) {
   const px = x * canvas.width;
   const py = y * canvas.height;
+  
   ctx.beginPath();
-  ctx.arc(px, py, 15, 0, 2 * Math.PI);
+  ctx.arc(px, py, 20, 0, 2 * Math.PI); // 크기 약간 키움
+  // 속도가 있으면 색상 표시 (녹색/빨강), 없으면 회색
   ctx.fillStyle = data.speed > 0 ? (data.dir === 'F' ? "#00E676" : "#EA4335") : "#888";
   ctx.fill();
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 4;
   ctx.strokeStyle = "#fff";
   ctx.stroke();
+
+  // 텍스트 라벨
   ctx.fillStyle = "#fff";
-  ctx.font = "bold 20px Pretendard";
-  ctx.fillText(`${side}`, px + 20, py);
+  ctx.font = "bold 24px Pretendard";
+  ctx.shadowColor = "rgba(0,0,0,0.8)";
+  ctx.shadowBlur = 4;
+  ctx.fillText(`${side}`, px + 25, py + 8);
 }
 
 function updateUI(l, r) {
   logLeft.innerText = l.speed === 0 ? "Stop" : `${l.dir} ${l.speed}`;
   logRight.innerText = r.speed === 0 ? "Stop" : `${r.dir} ${r.speed}`;
+  
   logLeft.style.color = l.speed === 0 ? "#aaa" : (l.dir === 'F' ? "#00aa00" : "#d00");
   logRight.style.color = r.speed === 0 ? "#aaa" : (r.dir === 'F' ? "#00aa00" : "#d00");
 }
@@ -185,7 +184,7 @@ btnConnect.addEventListener('click', async () => {
     bluetoothDevice.addEventListener('gattserverdisconnected', onDisconnected);
     const server = await bluetoothDevice.gatt.connect();
     const service = await server.getPrimaryService(BLUETOOTH_UUID_SERVICE);
-    // ★ 여기서 UUID_RX (...0003)를 사용해야 쓰기(Write)가 가능합니다.
+    // RX (Write) 주소 사용
     rxCharacteristic = await service.getCharacteristic(BLUETOOTH_UUID_RX);
 
     isConnected = true;
@@ -216,22 +215,22 @@ btnDisconnect.addEventListener('click', () => {
 });
 
 async function sendBluetoothData(str) {
-  // 연결 안됐거나, 이미 전송 중이면 스킵 (참고 코드의 안전장치 적용)
+  // 연결 없거나 전송 중이면 패스
   if (!isConnected || !rxCharacteristic || isSendingData) return;
   
   logPacket.innerText = str;
 
   try {
-    isSendingData = true; // 락 걸기
+    isSendingData = true; 
     const encoder = new TextEncoder();
-    // ★ 줄바꿈 문자 \r\n 적용
+    // ★ 줄바꿈 문자 \r\n 추가
     await rxCharacteristic.writeValue(encoder.encode(str + "\r\n"));
   } catch (e) {
     console.error("TX Error", e);
   } finally {
-    isSendingData = false; // 락 해제
+    isSendingData = false; 
   }
 }
 
+// 앱 시작
 createHandLandmarker();
-
