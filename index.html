@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>바운더리엑스 AI RC 컨트롤러</title>
+  <title>바운더리엑스 AI 핸드포즈 컨트롤러</title>
   
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
   <link rel="stylesheet" type="text/css" href="style.css">
@@ -15,7 +15,7 @@
   <header>
     <div class="title">
       <img src="https://raw.githubusercontent.com/boundary-x/ai_voice_recognition/refs/heads/main/boundaryx_logo.png" alt="Logo">
-      AI RC 컨트롤러 <span class="white-badge">Pro</span>
+      AI 핸즈포즈 <span class="white-badge">컨트롤러</span>
     </div>
     <div class="header-right">
         <span id="model-status" class="status-indicator loading">모델 로딩 중...</span>
@@ -24,16 +24,26 @@
 
   <div class="app-container">
     <aside class="sidebar">
+      
+      <div class="panel info-panel">
+        <h3>📘 사용 방법</h3>
+        <ol class="manual-list">
+          <li><strong>기기 찾기</strong> 버튼을 눌러 마이크로비트를 연결하세요.</li>
+          <li>카메라에 <strong>양손</strong>을 보여주세요.</li>
+          <li>화면 중앙 선을 기준으로 <strong>왼쪽/오른쪽</strong> 모터가 제어됩니다.</li>
+          <li>손의 <strong>높이</strong>로 속도와 방향을 조절하세요.</li>
+        </ol>
+      </div>
+
       <div class="panel">
         <h3>📡 연결 설정</h3>
-        <p class="desc">마이크로비트와 블루투스로 연결합니다.</p>
         <div id="bt-status" class="status-box">연결 대기 중</div>
         <button id="connect-btn" class="btn-primary">기기 찾기</button>
         <button id="disconnect-btn" class="btn-secondary hidden">연결 해제</button>
       </div>
 
       <div class="panel">
-        <h3>🎮 제어 상태</h3>
+        <h3>🎮 실시간 모터 출력</h3>
         <div class="monitor-row">
             <span class="motor-label">LEFT</span>
             <span id="log-left" class="motor-value">Stop</span>
@@ -42,17 +52,10 @@
             <span class="motor-label">RIGHT</span>
             <span id="log-right" class="motor-value">Stop</span>
         </div>
-        <div class="desc-box">
-            <ul>
-                <li>✋ <strong>상단:</strong> 전진 (최대 255)</li>
-                <li>✊ <strong>하단:</strong> 후진 (최대 255)</li>
-                <li>🎯 <strong>중앙:</strong> 정지 (Deadzone)</li>
-            </ul>
-        </div>
       </div>
       
       <div class="debug-panel">
-        <p>전송 데이터:</p>
+        <p>전송 패킷:</p>
         <code id="packet-log">LF000RF000</code>
       </div>
     </aside>
@@ -60,14 +63,55 @@
     <main class="stage">
       <div class="canvas-wrapper">
         <video id="webcam" autoplay playsinline></video>
-        <canvas id="output_canvas"></canvas>
         
-        <div class="overlay-guide">
-            <div class="zone-label left">L-Motor Zone</div>
-            <div class="zone-label right">R-Motor Zone</div>
+        <div class="overlay-guide-container">
+            <div class="zone forward-zone">
+                <span>🚀 전진 (가속)</span>
+            </div>
+            <div class="zone stop-zone">
+                <span>🛑 정지 (Deadzone)</span>
+            </div>
+            <div class="zone backward-zone">
+                <span>🔙 후진 (가속)</span>
+            </div>
+            
+            <div class="center-line"></div>
         </div>
+
+        <canvas id="output_canvas"></canvas>
       </div>
     </main>
   </div>
+
+  <footer>
+    <div class="footer-container">
+      <div class="footer-top">
+        <div class="footer-info">
+          <h2 class="footer-logo">바운더리엑스</h2>
+          <p class="slogan">"우리는 산업과 교육의 경계를 허물고,<br>미래 기술을 교실의 책상 위로 옮기는 사람들입니다"</p>
+          <address>
+            <p>경기도 의왕시 안양판교로 82(유니콘로드), 811호</p>
+            <p class="copyright">© 2024 Boundary X Co. All rights reserved.</p>
+          </address>
+        </div>
+
+        <div class="footer-links">
+          <div class="link-column">
+            <h4>제품 소개</h4>
+            <ul>
+              <li><a href="https://boundaryx.io/shop/?idx=25" target="_blank">AI 비트런</a></li>
+              <li><a href="https://boundaryx.io/shop/?idx=26" target="_blank">AI 포니봇</a></li>
+            </ul>
+          </div>
+          <div class="link-column">
+            <h4>고객 지원</h4>
+            <ul>
+              <li><a href="https://boundaryx.io/contact" target="_blank">문의처</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
