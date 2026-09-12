@@ -59,3 +59,11 @@ L{Dir}{Speed}R{Dir}{Speed}\r\n
 - All rights to the source code and design of this project belong to BoundaryX.
 - Web: boundaryx.io
 - Contact: https://boundaryx.io/contact
+
+## Guide and Support
+
+Open the header help button or expand **사용 가이드 및 지원** in the sidebar for a nine-step walkthrough, four micro:bit example links, packet reference and troubleshooting.
+
+Motor assignment uses the wrist position on the mirrored screen, not anatomical handedness. The upper 40% moves forward, the middle 20% outputs zero and the lower 40% moves backward. Packets contain 10 characters followed by CRLF, for example `LF255RB150`. Missing hands produce zero output for their side while inference is running.
+
+The guide does not pause inference or transmission. Run `node tests/support.cjs` with Playwright and Microsoft Edge for layout checks; the test mocks hand detection and uses a simulated camera. Physical Bluetooth and motor behavior require device testing.
