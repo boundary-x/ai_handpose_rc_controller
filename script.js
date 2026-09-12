@@ -2,6 +2,32 @@ import {
   HandLandmarker,
   FilesetResolver
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
+import { HAND_CONNECTIONS, createHandFeedback } from './hand-feedback.js';
+
+const getHandFeedback = createHandFeedback();
+const feedbackNodes = {};
+const overlay = document.querySelector('.overlay-guide-container');
+for (const side of ['left', 'right']) {
+  const node = document.createElement('div');
+  node.className = 'hand-feedback hand-feedback-' + side;
+  node.dataset.state = 'pending';
+  const message = document.createElement('span');
+  message.setAttribute('role', 'status');
+  message.setAttribute('aria-live', 'polite');
+  node.appendChild(message);
+  overlay.appendChild(node);
+  feedbackNodes[side] = node;
+}
+
+// Align guide zones and feedback with the actual object-fit:contain video area.
+function alignVideoOverlay() {
+  if (!webcam || !webcam.videoWidth) return;
+  const wrapper = document.querySelector('.canvas-wrapper');
+  const scale = Math.min(wrapper.clientWidth / webcam.videoWidth, wrapper.clientHeight / webcam.videoHeight);
+  const width = webcam.videoWidth * scale, height = webcam.videoHeight * scale;
+  Object.assign(overlay.style, {width:width+'px',height:height+'px',left:(wrapper.clientWidth-width)/2+'px',top:(wrapper.clientHeight-height)/2+'px'});
+}
+new ResizeObserver(alignVideoOverlay).observe(document.querySelector('.canvas-wrapper'));
 
 /** * 설정 변수 */
 const DEADZONE_MIN = 0.40; // 0~40% 전진
@@ -61,13 +87,14 @@ function startWebcam() {
 
   navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
     webcam.srcObject = stream;
+    webcam.addEventListener("loadeddata", alignVideoOverlay);
     webcam.addEventListener("loadeddata", predictWebcam);
   });
 }
 
 // 3. 메인 루프
 async function predictWebcam() {
-  if (canvas.width !== webcam.videoWidth) {
+  if (canvas.width !== webcam.videoWidth || canvas.height !== webcam.videoHeight) {
     canvas.width = webcam.videoWidth;
     canvas.height = webcam.videoHeight;
   }
@@ -90,13 +117,21 @@ async function predictWebcam() {
   let leftMotor = { dir: 'F', speed: 0 };
   let rightMotor = { dir: 'F', speed: 0 };
 
-  if (results.landmarks) {
-    for (const landmarks of results.landmarks) {
+  const hands = results?.landmarks || [];
+  for (const [side, feedback] of Object.entries(getHandFeedback(hands, startTimeMs))) {
+    const node = feedbackNodes[side];
+    node.dataset.state = feedback.state;
+    const text = feedback.text ? `${side === 'left' ? '왼쪽' : '오른쪽'} · ${feedback.text}` : '';
+    if (node.firstChild.textContent !== text) node.firstChild.textContent = text;
+  }
+  if (hands.length) {
+    for (const landmarks of hands) {
       const wrist = landmarks[0]; 
       const visualX = 1 - wrist.x; // 좌우 반전 좌표
       const visualY = wrist.y;
 
       const motorData = calculateMotorValue(visualY);
+      drawHandSkeleton(landmarks);
 
       // 화면 왼쪽(0~0.5)은 Left Motor
       if (visualX < 0.5) {
@@ -144,7 +179,27 @@ function calculateMotorValue(y) {
 }
 
 // 손 위치 시각화 (동그라미)
+function drawHandSkeleton(landmarks) {
+  ctx.save();
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (const [a,b] of HAND_CONNECTIONS) {
+    if (!landmarks[a] || !landmarks[b]) continue;
+    ctx.moveTo((1-landmarks[a].x)*canvas.width,landmarks[a].y*canvas.height);
+    ctx.lineTo((1-landmarks[b].x)*canvas.width,landmarks[b].y*canvas.height);
+  }
+  ctx.stroke();
+  ctx.fillStyle = '#8be9ff';
+  for (const p of landmarks.slice(1)) {
+    ctx.beginPath();ctx.arc((1-p.x)*canvas.width,p.y*canvas.height,4,0,Math.PI*2);ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawHandIndicator(x, y, data, side) {
+  ctx.save();
   const px = x * canvas.width;
   const py = y * canvas.height;
   
@@ -162,6 +217,7 @@ function drawHandIndicator(x, y, data, side) {
   ctx.shadowColor = "rgba(0,0,0,0.8)";
   ctx.shadowBlur = 4;
   ctx.fillText(`${side}`, px + 25, py + 8);
+  ctx.restore();
 }
 
 function updateUI(l, r) {
