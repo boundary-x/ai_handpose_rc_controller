@@ -63,7 +63,7 @@ const dialog = document.createElement('dialog');
       ];
       const fit = candidates.find(([cx, cy]) => cx >= 12 && cy >= 12 && cx + pw <= width - 12 && cy + ph <= height - 12);
       if (fit) [x,y] = fit;
-      else if (r.left < x - 28) r = {left:r.left,top:r.top,right:Math.min(r.right,x-16),bottom:r.bottom};
+      // Keep the target's full width even when the explanation must overlay it.
     }
     panel.style.left = x + 'px'; panel.style.top = Math.max(12, y) + 'px';
     if (r) {
@@ -103,7 +103,6 @@ const dialog = document.createElement('dialog');
   window.addEventListener('scroll', reposition, {passive:true});
   if (location.hash === '#support-card') requestAnimationFrame(() => openHelp());
 })();
-
 
 
 
