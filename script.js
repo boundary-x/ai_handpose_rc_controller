@@ -128,8 +128,8 @@ async function predictWebcam() {
   const hands = results?.landmarks || [];
   for (const [side, feedback] of Object.entries(getHandFeedback(hands, startTimeMs))) {
     const node = feedbackNodes[side];
-    node.dataset.state = feedback.state;
-    const text = feedback.text ? `${side === 'left' ? '왼쪽' : '오른쪽'} · ${feedback.text}` : '';
+    node.dataset.state = feedback.state === 'edge' ? 'tracked' : feedback.state;
+    const text = feedback.state === 'missing' && feedback.text ? `${side === 'left' ? '왼쪽' : '오른쪽'} · ${feedback.text}` : '';
     if (node.firstChild.textContent !== text) node.firstChild.textContent = text;
   }
   if (hands.length) {
@@ -177,13 +177,13 @@ function calculateMotorValue(y) {
 
   if (y < DEADZONE_MIN) {
     // 전진 (0 ~ 0.4)
-    let ratio = (DEADZONE_MIN - y) / DEADZONE_MIN;
-    speed = Math.min(255, Math.floor(ratio * 255));
+    let ratio = (DEADZONE_MIN - y) / 0.20;
+    speed = Math.min(180, Math.round(ratio * 180));
     dir = 'F';
   } else if (y > DEADZONE_MAX) {
     // 후진 (0.6 ~ 1.0)
-    let ratio = (y - DEADZONE_MAX) / (1.0 - DEADZONE_MAX);
-    speed = Math.min(255, Math.floor(ratio * 255));
+    let ratio = (y - DEADZONE_MAX) / 0.20;
+    speed = Math.min(180, Math.round(ratio * 180));
     dir = 'B';
   } else {
     // 정지

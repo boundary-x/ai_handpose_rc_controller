@@ -10,13 +10,13 @@ await page.waitForFunction(()=>document.querySelector('.hand-feedback-left').dat
 assert.equal(await page.locator('.hand-feedback-right').getAttribute('data-state'),'missing');
 assert.equal(await page.locator('#log-left').textContent(),'Stop');
 await page.evaluate(()=>window.testHands.push(window.testHands[0].map(p=>({...p,x:1-p.x}))));
-await page.waitForFunction(()=>document.getElementById('log-left').textContent==='F 95');
+await page.waitForFunction(()=>document.getElementById('log-left').textContent==='F 135');
 await page.evaluate(()=>window.testHands.pop());
 await page.waitForFunction(()=>document.getElementById('log-left').textContent==='Stop');
 assert((await page.locator('.drive-notice').textContent()).includes('정지 중')); 
 await page.evaluate(()=>window.testHands[0][8].y=.01);
-await page.waitForFunction(()=>document.querySelector('.hand-feedback-left').dataset.state==='edge');
-assert((await page.locator('.hand-feedback-left').textContent()).includes('내려주세요'));
+await page.waitForFunction(()=>document.querySelector('.hand-feedback-left').dataset.state==='tracked');
+assert.equal(await page.locator('.hand-feedback-left').textContent(),'');
 await page.evaluate(()=>window.testHands=[]);
 await page.waitForFunction(()=>document.getElementById('log-left').textContent==='Stop');
 await page.waitForFunction(()=>document.querySelector('.hand-feedback-left').dataset.state==='missing');
