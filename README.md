@@ -64,10 +64,10 @@ L{Dir}{Speed}R{Dir}{Speed}\r\n
 
 Open the header help button or expand **사용 가이드 및 지원** in the sidebar for a nine-step walkthrough, four micro:bit example links, packet reference and troubleshooting.
 
-Motor assignment uses the wrist position on the mirrored screen, not anatomical handedness. The upper 40% moves forward, the middle 20% outputs zero and the lower 40% moves backward. Packets contain 10 characters followed by CRLF, for example `LF255RB150`. Missing hands produce zero output for their side while inference is running.
+Motor assignment uses the wrist position on the mirrored screen, not anatomical handedness. The upper 40% moves forward, the middle 20% outputs zero and the lower 40% moves backward. Packets contain 10 characters followed by CRLF, for example `LF255RB150`. If either screen half lacks a detected hand, both motor outputs become zero. Motion resumes after a hand is present in each half continuously for 300 ms.
 
 The guide does not pause inference or transmission. Run `node tests/support.cjs` with Playwright and Microsoft Edge for layout checks; the test mocks hand detection and uses a simulated camera. Physical Bluetooth and motor behavior require device testing.
 
 ### Hand visibility feedback
 
-The existing landmarks are drawn as thin connections and small joints; the wrist remains the motor control point. A yellow message directs a detected hand away from the camera edges. After 300 ms without a hand on a screen side, that half receives a translucent red overlay and a hand-placement prompt. Only the message is delayed: motor output still becomes zero immediately when the side has no detected hand. Guidance overlays follow the actual letterboxed camera image. No extra model inference is introduced.
+The existing landmarks are drawn as thin connections and small joints; the wrist remains the motor control point. A yellow message directs a detected hand away from the camera edges. After 300 ms without a hand on a screen side, that half receives a translucent red overlay and a hand-placement prompt. Only the message is delayed: both motor outputs become zero immediately when either side has no detected hand. Motion resumes after both sides remain detected for 300 ms. Guidance overlays follow the actual letterboxed camera image. No extra model inference is introduced.

@@ -3,10 +3,17 @@ import {
   FilesetResolver
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 import { HAND_CONNECTIONS, createHandFeedback } from './hand-feedback.js';
+import { createDriveGate } from './drive-gate.js';
+const checkDrive = createDriveGate();
+let driveState = {ready:false, text:'양손을 인식시키세요 · 정지 중'};
 
 const getHandFeedback = createHandFeedback();
 const feedbackNodes = {};
 const overlay = document.querySelector('.overlay-guide-container');
+const driveNotice = document.createElement('div');
+driveNotice.className = 'drive-notice';
+driveNotice.setAttribute('role', 'status');
+overlay.appendChild(driveNotice);
 for (const side of ['left', 'right']) {
   const node = document.createElement('div');
   node.className = 'hand-feedback hand-feedback-' + side;
@@ -103,6 +110,7 @@ async function predictWebcam() {
   if (lastVideoTime !== webcam.currentTime) {
     lastVideoTime = webcam.currentTime;
     results = handLandmarker.detectForVideo(webcam, startTimeMs);
+    driveState = checkDrive(results?.landmarks || [], startTimeMs);
   }
 
   // 화면 그리기 (거울 모드)
@@ -130,7 +138,7 @@ async function predictWebcam() {
       const visualX = 1 - wrist.x; // 좌우 반전 좌표
       const visualY = wrist.y;
 
-      const motorData = calculateMotorValue(visualY);
+      const motorData = driveState.ready ? calculateMotorValue(visualY) : {dir:'F', speed:0};
       drawHandSkeleton(landmarks);
 
       // 화면 왼쪽(0~0.5)은 Left Motor
@@ -144,6 +152,12 @@ async function predictWebcam() {
     }
   }
 
+  if (!driveState.ready) {
+    leftMotor = {dir:'F', speed:0};
+    rightMotor = {dir:'F', speed:0};
+  }
+  if (driveNotice.textContent !== driveState.text) driveNotice.textContent = driveState.text;
+  driveNotice.hidden = driveState.ready;
   updateUI(leftMotor, rightMotor);
   
   // 패킷 생성 (LFxxxRFxxx)

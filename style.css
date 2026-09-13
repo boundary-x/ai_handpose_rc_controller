@@ -171,6 +171,8 @@ canvas {
 .hand-feedback[data-state="missing"] span {display:block;background:rgba(130,15,15,.88)}
 .hand-feedback[data-state="edge"] span {display:block;background:#ffdf80;color:#352500}
 .hand-feedback[data-state="edge"] {align-items:flex-start;padding-top:12px}
+.drive-notice{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:2;max-width:95%;padding:10px 16px;border-radius:12px;background:rgba(130,15,15,.92);color:white;font-size:clamp(12px,1.5vw,20px);font-weight:700;text-align:center;}
+.drive-notice[hidden]{display:none}
 
 /* 태블릿/모바일 세로 모드 대응 */
 @media (max-width: 900px) {
