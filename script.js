@@ -284,17 +284,19 @@ btnDisconnect.addEventListener('click', () => {
 });
 
 async function sendBluetoothData(str) {
-  if (!isConnected || !rxCharacteristic || isSendingData) return;
-  
-  logPacket.innerText = str;
+  if (!isConnected || !rxCharacteristic) { logPacket.innerText = '전송할 데이터: ' + str; return; }
+  if (isSendingData) return;
+  const target = rxCharacteristic;
 
   try {
     isSendingData = true; 
     const encoder = new TextEncoder();
     // ★ 줄바꿈 문자 \r\n 추가
-    await rxCharacteristic.writeValue(encoder.encode(str + "\r\n"));
+    await target.writeValue(encoder.encode(str + "\r\n"));
+    if (isConnected && target === rxCharacteristic) logPacket.innerText = '전송됨: ' + str;
   } catch (e) {
     console.error("TX Error", e);
+    if (isConnected && target === rxCharacteristic) logPacket.innerText = '전송 실패: ' + str;
   } finally {
     isSendingData = false; 
   }
@@ -302,3 +304,5 @@ async function sendBluetoothData(str) {
 
 // 앱 시작
 createHandLandmarker();
+
+
